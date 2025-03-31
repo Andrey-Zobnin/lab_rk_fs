@@ -7,6 +7,9 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 struct metafile {
     int count;
@@ -33,9 +36,27 @@ struct pair {
 };
 
 class FileSystem {
-public:
+private:
     std::string fsFileName;
     initfs fs;
+    std::string errorLogFile = "fs_errors.log";
+
+    void logError(const std::string& error);
+    void readInitfs();
+    void writeInitfs();
+    bool fileExists(const std::string& filename);
+    bool dirExists(const std::string& dirname);
+    std::string getCurrentTime();
+
+public:
+    FileSystem() : fsFileName("mydump") {
+        std::ifstream test(fsFileName);
+        if (!test.good()) {
+            init();
+        }
+        test.close();
+        readInitfs();
+    }
 
     void init();
     void writeFile(const std::string& filename);
@@ -44,6 +65,7 @@ public:
     void changeDirectory(const std::string& dirname);
     void listDirectory();
     std::string getCurrentPath();
+    void showErrorLog();
 };
 
 #endif
