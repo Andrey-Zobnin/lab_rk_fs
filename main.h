@@ -29,6 +29,7 @@ struct pair {
     char name[20];
     int offset;
     bool isDirectory;
+    int OffsetP0;
 };
 
 class FileSystem {
@@ -36,22 +37,13 @@ public:
     std::string fsFileName;
     initfs fs;
 
-    FileSystem(const std::string& filename = "mydump");
     void init();
     void writeFile(const std::string& filename);
     void readFile(const std::string& filename);
     void createDirectory(const std::string& dirname);
     void changeDirectory(const std::string& dirname);
     void listDirectory();
-    bool fileExists(const std::string& filename) const;
-    bool directoryExists(const std::string& dirname) const;
-    std::string getCurrentPath() const;
-
-private:
-    void updateInitfs();
-    void readInitfs();
-    std::vector<pair> readPairs();
-    void writePairs(const std::vector<pair>& pairs);
+    std::string getCurrentPath();
 };
 
-#endif 
+#endif
