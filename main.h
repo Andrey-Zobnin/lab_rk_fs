@@ -32,16 +32,10 @@ struct pair {
 };
 
 class FileSystem {
-private:
+public:
     std::string fsFileName;
     initfs fs;
 
-    void updateInitfs();
-    void readInitfs();
-    std::vector<pair> readPairs();
-    void writePairs(const std::vector<pair>& pairs);
-
-public:
     FileSystem(const std::string& filename = "mydump");
     void init();
     void writeFile(const std::string& filename);
@@ -52,6 +46,12 @@ public:
     bool fileExists(const std::string& filename) const;
     bool directoryExists(const std::string& dirname) const;
     std::string getCurrentPath() const;
+
+private:
+    void updateInitfs();
+    void readInitfs();
+    std::vector<pair> readPairs();
+    void writePairs(const std::vector<pair>& pairs);
 };
 
 #endif 
