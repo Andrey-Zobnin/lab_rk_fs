@@ -183,71 +183,39 @@ void listDirectory() {
 }
 
 int main(int argc, char** argv) {
-    std::string command;
-    std::string filename;
-    
-    if (argc == 3) {
-        command = argv[1];
-        filename = argv[2];
-    } else {
-        std::cout << "Input command (i|r|w|mkdir|cd|ls): ";
-        std::cin >> command;
-        if (command != "i" && command != "ls") {
-            std::cin >> filename;
+    std::string command, filename;
+
+    while (true) {
+        if (argc == 3) {
+            command = argv[1];
+            filename = argv[2];
+            argc = 1;
+        } else {
+            std::cout << "\nInput command (i|r|w|mkdir|cd|ls): ";
+            std::getline(std::cin, command);
+            
+            if (command.empty()) {
+                std::cout << "Press Enter again to exit...";
+                if (std::cin.get() == '\n') break;
+                continue;
+            }
+
+            size_t pos = command.find(' ');
+            if (pos != std::string::npos) {
+                filename = command.substr(pos + 1);
+                command = command.substr(0, pos);
+            } else filename.clear();
+        }
+
+        switch (command[0]) {
+            case 'i': init(); break;
+            case 'r': !filename.empty() ? readFile(filename) : void(std::cout << "Filename required\n"); break;
+            case 'w': !filename.empty() ? writeFile(filename) : void(std::cout << "Filename required\n"); break;
+            case 'm': !filename.empty() ? createDirectory(filename) : void(std::cout << "Directory name required\n"); break;
+            case 'c': !filename.empty() ? changeDirectory(filename) : void(std::cout << "Directory name required\n"); break;
+            case 'l': listDirectory(); break;
+            default: std::cout << "Unknown command. Use i,r,w,mkdir,cd,ls\n"; break;
         }
     }
-
-    switch (command[0]) {
-        case 'i':
-            init();
-            break;
-            
-        case 'r':
-            if (!filename.empty()) {
-                readFile(filename);
-            } else {
-                std::cout << "Filename required for read operation\n";
-            }
-            break;
-            
-        case 'w':
-            if (!filename.empty()) {
-                writeFile(filename);
-            } else {
-                std::cout << "Filename required for write operation\n";
-            }
-            break;
-            
-        case 'm': // mkdir
-            if (!filename.empty()) {
-                createDirectory(filename);
-            } else {
-                std::cout << "Directory name required\n";
-            }
-            break;
-            
-        case 'c': // cd
-            if (!filename.empty()) {
-                changeDirectory(filename);
-            } else {
-                std::cout << "Directory name required\n";
-            }
-            break;
-            
-        case 'l': // ls
-            listDirectory();
-            break;
-            
-        default:
-            std::cout << "Unknown command. Available commands:\n"
-                      << "i - initialize filesystem\n"
-                      << "r <file> - read file\n"
-                      << "w <file> - write file\n"
-                      << "mkdir <dir> - create directory\n"
-                      << "cd <dir> - change directory\n"
-                      << "ls - list contents\n";
-            break;
-    }
-    
     return 0;
 }
