@@ -1,28 +1,4 @@
-
-#include <cstring>
-#include <fstream>
-#include <iostream>
-
-struct metafile {
-    int count;
-    char name[20];
-};
-struct mfile {
-    metafile meta;
-    std::string data;
-};
-
-struct initfs {
-    int offset;
-    int count;
-    //    int fileOffset;
-    int fileEndOffset;
-};
-
-struct pair {
-    char name[20];
-    int offset;
-};
+#include "main.h"
 
 void init() {
     std::fstream f("mydump");
