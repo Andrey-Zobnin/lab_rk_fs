@@ -11,7 +11,6 @@ void init() {
     initfs init;
     init.offset = 100;
     init.count = 0;
-    //    init.fileOffset = 1000;
     init.fileEndOffset = 1000;
 
     f.write((char*)(&(init)), sizeof(init));
@@ -46,16 +45,10 @@ void readFile(const std::string filename) {
 
     std::fstream f("mydump");
     f.seekg(fs.offset, std::ios::beg);
-    // for (int i = 0; i < fs.count; ++i) {
-    //     f.read((char*)&(p), sizeof(p));
-    //     if (p.name == filename) {
-    //         break;
-    //     }
-    // }
     pair* arr = new pair[fs.count];
     f.read((char*)arr, sizeof(pair) * fs.count);
     for (int i = 0; i < fs.count; ++i) {
-        if (arr[i].name == filename) {
+        if (!arr[i].isDirectory && strcmp(arr[i].name, filename.c_str()) == 0) {
             p = arr + i;
             break;
         }
@@ -63,6 +56,7 @@ void readFile(const std::string filename) {
 
     if (p == nullptr) {
         std::cout << "File not exist\n" << filename << "\n";
+        delete[] arr;
         return;
     }
 
@@ -82,13 +76,6 @@ void readFile(const std::string filename) {
     f.close();
 }
 
-// Чтение указатель на таблицу
-// Если файлов нет -> seek(tabSize * count) -> ( filename, ptr=fileEndOffset)
-// (meta, data)
-// Если файл есть -> seek(tabSize * count) -> (filenema, ptr=fileEndOffset)
-// (meta, data)
-//
-
 void writeFile(const std::string filename) {
     mfile my_file;
     memcpy(my_file.meta.name, filename.data(), filename.size());
@@ -105,8 +92,8 @@ void writeFile(const std::string filename) {
     ifs.close();
 
     initfs fs = getInitfs();
-    int localOffset = fs.offset + fs.count * sizeof(pair);  // начало пары
-    int localFileEndOffset = fs.fileEndOffset;              // начало для файла
+    int localOffset = fs.offset + fs.count * sizeof(pair);
+    int localFileEndOffset = fs.fileEndOffset;
 
     fs.count++;
     fs.fileEndOffset += sizeof(my_file.meta) + my_file.meta.count;
@@ -120,6 +107,7 @@ void writeFile(const std::string filename) {
     pair p;
     memcpy(p.name, my_file.meta.name, sizeof(my_file.meta.name));
     p.offset = localFileEndOffset;
+    p.isDirectory = false;
     f.seekg(localOffset, std::ios::beg);
     f.write((char*)(&(p)), sizeof(p));
 
@@ -130,33 +118,136 @@ void writeFile(const std::string filename) {
     f.close();
 }
 
+
+void createDirectory(const std::string dirname) {
+    initfs fs = getInitfs();
+    
+    if (dirname.size() >= 20) {
+        std::cout << "Directory name max 19 char\n";
+        return;
+    }
+
+    pair* arr = new pair[fs.count];
+    std::fstream f("mydump");
+    f.seekg(fs.offset, std::ios::beg);
+    f.read((char*)arr, sizeof(pair) * fs.count);
+    
+    for (int i = 0; i < fs.count; ++i) {
+        if (arr[i].isDirectory && strcmp(arr[i].name, dirname.c_str()) == 0) {
+            std::cout << "Directory already exists\n";
+            delete[] arr;
+            return;
+        }
+    }
+    delete[] arr;
+
+    int localOffset = fs.offset + fs.count * sizeof(pair);
+    fs.count++;
+    setInitfs(fs);
+
+    pair p;
+    memcpy(p.name, dirname.c_str(), dirname.size() + 1);
+    p.offset = 0; 
+    p.isDirectory = true;
+    
+    f.seekg(localOffset, std::ios::beg);
+    f.write((char*)(&p), sizeof(p));
+    f.close();
+    
+    std::cout << "Directory created: " << dirname << "\n";
+}
+
+void changeDirectory(const std::string dirname) {
+    std::cout << "Currently only \n";
+}
+
+void listDirectory() {
+    initfs fs = getInitfs();
+    pair* arr = new pair[fs.count];
+    
+    std::fstream f("mydump");
+    f.seekg(fs.offset, std::ios::beg);
+    f.read((char*)arr, sizeof(pair) * fs.count);
+    
+    std::cout << "Directory contents:\n";
+    for (int i = 0; i < fs.count; ++i) {
+        if (arr[i].isDirectory) {
+            std::cout << "[DIR] " << arr[i].name << "\n";
+        } else {
+            std::cout << "[FILE] " << arr[i].name << "\n";
+        }
+    }
+    
+    delete[] arr;
+    f.close();
+}
+
 int main(int argc, char** argv) {
-    std::string choice;
+    std::string command;
     std::string filename;
+    
     if (argc == 3) {
-        choice = argv[1];
+        command = argv[1];
         filename = argv[2];
     } else {
-        std::cout << "Input r|w|i: ";
-        std::cin >> choice;
-        if (choice[0] != 'i') {
+        std::cout << "Input command (i|r|w|mkdir|cd|ls): ";
+        std::cin >> command;
+        if (command != "i" && command != "ls") {
             std::cin >> filename;
         }
     }
 
-    switch (choice[0]) {
+    switch (command[0]) {
         case 'i':
             init();
             break;
+            
         case 'r':
-            readFile(filename);
+            if (!filename.empty()) {
+                readFile(filename);
+            } else {
+                std::cout << "Filename required for read operation\n";
+            }
             break;
+            
         case 'w':
-            writeFile(filename);
+            if (!filename.empty()) {
+                writeFile(filename);
+            } else {
+                std::cout << "Filename required for write operation\n";
+            }
             break;
+            
+        case 'm': // mkdir
+            if (!filename.empty()) {
+                createDirectory(filename);
+            } else {
+                std::cout << "Directory name required\n";
+            }
+            break;
+            
+        case 'c': // cd
+            if (!filename.empty()) {
+                changeDirectory(filename);
+            } else {
+                std::cout << "Directory name required\n";
+            }
+            break;
+            
+        case 'l': // ls
+            listDirectory();
+            break;
+            
         default:
-            std::cout << "not op\n";
+            std::cout << "Unknown command. Available commands:\n"
+                      << "i - initialize filesystem\n"
+                      << "r <file> - read file\n"
+                      << "w <file> - write file\n"
+                      << "mkdir <dir> - create directory\n"
+                      << "cd <dir> - change directory\n"
+                      << "ls - list contents\n";
             break;
     }
+    
     return 0;
 }
