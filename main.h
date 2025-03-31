@@ -1,0 +1,56 @@
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <string>
+
+struct metafile {
+    int count;
+    char name[20];
+};
+
+struct mfile {
+    metafile meta;
+    std::string data;
+};
+
+struct initfs {
+    int offset;
+    int count;
+    int fileEndOffset;
+    int currentDirOffset;
+};
+
+struct pair {
+    char name[20];
+    int offset;
+    bool isDirectory;
+};
+
+class FileSystem {
+private:
+    std::string fsFileName;
+    initfs fs;
+
+    void updateInitfs();
+    void readInitfs();
+    std::vector<pair> readPairs();
+    void writePairs(const std::vector<pair>& pairs);
+
+public:
+    FileSystem(const std::string& filename = "mydump");
+    void init();
+    void writeFile(const std::string& filename);
+    void readFile(const std::string& filename);
+    void createDirectory(const std::string& dirname);
+    void changeDirectory(const std::string& dirname);
+    void listDirectory();
+    bool fileExists(const std::string& filename) const;
+    bool directoryExists(const std::string& dirname) const;
+    std::string getCurrentPath() const;
+};
+
+#endif 
