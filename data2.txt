@@ -1,0 +1,2 @@
+As we know C++ is a comprehensive and powerful programming language but there are few highly specialized situations that it cannot handle. For those situations, C++ provides an option using which one can drop an assembly code at any time. This option is the use of the ‘asm’ statement. Using asm statement, the assembly language can be embedded directly into the C++ program. The asm keyword takes a single field which must be a string literal.
+The general form of asm keyword is:

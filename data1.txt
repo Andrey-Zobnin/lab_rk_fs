@@ -1,0 +1,1 @@
+In C++, we can read the data of the file for different purposes such as processing text-based data, configuration files, or log files. In this article, we'll learn how to read a file line by line in C++.
