@@ -208,13 +208,55 @@ int main(int argc, char** argv) {
         }
 
         switch (command[0]) {
-            case 'i': init(); break;
-            case 'r': !filename.empty() ? readFile(filename) : void(std::cout << "Filename required\n"); break;
-            case 'w': !filename.empty() ? writeFile(filename) : void(std::cout << "Filename required\n"); break;
-            case 'm': !filename.empty() ? createDirectory(filename) : void(std::cout << "Directory name required\n"); break;
-            case 'c': !filename.empty() ? changeDirectory(filename) : void(std::cout << "Directory name required\n"); break;
-            case 'l': listDirectory(); break;
-            default: std::cout << "Unknown command. Use i,r,w,mkdir,cd,ls\n"; break;
+            case 'i':
+                init();
+                break;
+                
+            case 'r':
+                if (!filename.empty()) {
+                    readFile(filename);
+                } else {
+                    std::cout << "Filename required for read operation\n";
+                }
+                break;
+                
+            case 'w':
+                if (!filename.empty()) {
+                    writeFile(filename);
+                } else {
+                    std::cout << "Filename required for write operation\n";
+                }
+                break;
+                
+            case 'm': // mkdir
+                if (!filename.empty()) {
+                    createDirectory(filename);
+                } else {
+                    std::cout << "Directory name required\n";
+                }
+                break;
+                
+            case 'c': // cd
+                if (!filename.empty()) {
+                    changeDirectory(filename);
+                } else {
+                    std::cout << "Directory name required\n";
+                }
+                break;
+                
+            case 'l': // ls
+                listDirectory();
+                break;
+                
+            default:
+                std::cout << "Unknown command. Available commands:\n"
+                          << "i - initialize filesystem\n"
+                          << "r <file> - read file\n"
+                          << "w <file> - write file\n"
+                          << "mkdir <dir> - create directory\n"
+                          << "cd <dir> - change directory\n"
+                          << "ls - list contents\n";
+                break;
         }
     }
     return 0;
